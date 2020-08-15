@@ -32,7 +32,65 @@ mosquitto -c filename
 You can find the mosquitto.conf template file in the /etc/mosquitto/ folder.
 
 Setting up security
+http://www.steves-internet-guide.com/mosquitto-tls/
 https://dzone.com/articles/mqtt-security-securing-a-mosquitto-server
+
+openssl genrsa -out mosq-ca.key 2048
+openssl req -new -x509 -days 1826 -key mosq-ca.key -out mosq-ca.crt
+
+pi@raspberrypi:~/ssl-cert-mosq $ openssl req -new -x509 -days 1826 -key mosq-ca.key -out mosq-ca.crt
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:SE
+State or Province Name (full name) [Some-State]:Skane
+Locality Name (eg, city) []:Lund
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:OrgName
+Organizational Unit Name (eg, section) []:Test
+Common Name (e.g. server FQDN or YOUR name) []:127.0.0.1
+Email Address []:test@blaha.com
+---
+
+openssl genrsa -out mosq-serv.key 2048
+
+openssl req -new -key mosq-serv.key -out mosq-serv.csr
+
+---
+pi@raspberrypi:~/ssl-cert-mosq $ openssl req -new -key mosq-serv.key -out mosq-serv.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:SE
+State or Province Name (full name) [Some-State]:Skane
+Locality Name (eg, city) []:Lund
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:OrgName
+Organizational Unit Name (eg, section) []:Test
+Common Name (e.g. server FQDN or YOUR name) []:127.0.0.1
+Email Address []:test@blaha.com
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:
+---
+
+openssl x509 -req -in mosq-serv.csr -CA mosq-ca.crt -CAkey mosq-ca.key -CAcreateserial -out mosq-serv.crt -days 365 -sha256
+
+
+Locate the mosquitto.conf file that holds all the configuration parameters and add the following lines:
+
+listener 8883
+cafile /home/pi/ssl-cert-mosq/mosq-ca.crt
+certfile /home/pi/ssl-cert-mosq/mosq-serv.crt
+keyfile /home/pi/ssl-cert-mosq/mosq-serv.key
 
 
 
