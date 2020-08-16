@@ -126,9 +126,14 @@ When adding the first MQTT input node will you be asked to set up the broker set
 https://github.com/NRCHKB/node-red-contrib-homekit-bridged/wiki/Characteristics
 
 
-### Node Red, SMHI
+#### Node Red, SMHI
 
 https://github.com/Naesstrom/SMHI-NodeRed-HomeAssistant
+
+
+#### Dashboard
+
+https://randomnerdtutorials.com/getting-started-with-node-red-dashboard/
 
 
 ## Links
