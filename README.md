@@ -98,7 +98,38 @@ keyfile /home/pi/ssl-cert-mosq/mosq-serv.key
 
 ### Node Red, MQTT -> HomeKit
 
+https://nodered.org/docs/getting-started/raspberrypi
+
+Install build essentials, probably already installed
+sudo apt install build-essential git
+
+Run script
+bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+
+Enable autostart on boot
+sudo systemctl enable nodered.service
+
+Read log
+node-red-log
+
+#### General programming tips
+
+http://noderedguide.com
+
+#### MQTT broker
+
+When adding the first MQTT input node will you be asked to set up the broker settings.
+
+
+#### Homekit
+
+https://github.com/NRCHKB/node-red-contrib-homekit-bridged/wiki/Characteristics
+
+
 ### Node Red, SMHI
+
+https://github.com/Naesstrom/SMHI-NodeRed-HomeAssistant
+
 
 ## Links
 
