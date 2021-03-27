@@ -3,10 +3,73 @@
 ## Setup
 
 ### Raspberry Pi
-*** TODO ***
+
+#### Raspberry Pi OS
+Use Raspberry Pi Imager (https://www.raspberrypi.org/software/) to write an image of the Raspberry Py OS on your SD-card.
+
+#### Enable ssh before inserting uSD-card in Raspberry Pi
+Insert uSD-card in computer and add an empty file called ssh to the boot volume of the uSD-card.
+touch ssh
+
+#### Insert uSD-card in Raspberry Pi
+
+ping raspberrypi.local
+
+ssh pi@raspberrypi.local
+password=raspberry
+
+sudo apt-get update
+sudo apt-get upgrade
+
+##### raspi-config
+Change Password
+Change Hostname
+Optional - Set Boot / Auto Login
+Optional - Change default Display Resolution
+Optional - Enable VNC
+Optional - Configure Locale -> svUTF8 + lang en.GB
+Set Timezone
+Configure keyboard
+Set WLAN country
+Expand filesystem
+
+sudo reboot
+
+##### Install needed SW
+sudo apt-get install build-essential - probably already installed
 
 #### Connecting to Github with ssh
+Follow the instructions here
 https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh
+to setup the ssh keys
+
+Create key
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+Start ssh agent in background
+eval "$(ssh-agent -s)"
+
+Add key to agent
+ssh-add ~/.ssh/id_ed25519
+
+cat .ssh/id_ed25519.pub
+
+Add key to Github
+
+Configure git
+git config --global user.name "Thomas Berg"
+git config --global user.email "thomas.berg2@gmail.com"
+
+#####
+Clone WalnuGateway repo
+
+
+
+
+
+
+-------
+
 
 
 ### MQTT broker
