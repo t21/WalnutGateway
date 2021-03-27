@@ -5,6 +5,10 @@
 ### Raspberry Pi
 *** TODO ***
 
+#### Connecting to Github with ssh
+https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh
+
+
 ### MQTT broker
 Update the package database
 sudo apt-get update
