@@ -1,0 +1,3 @@
+####### WalnutGateway.py requirements.txt #######
+bluepy ~= 1.3
+paho-mqtt ~= 1.5
