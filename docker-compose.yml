@@ -1,0 +1,105 @@
+version: '3.6'
+services:
+  # grafana:
+  #   container_name: grafana
+  #   image: grafana/grafana
+  #   restart: unless-stopped
+  #   user: "0"
+  #   ports:
+  #   - "3000:3000"
+  #   environment:
+  #   - GF_PATHS_DATA=/var/lib/grafana
+  #   - GF_PATHS_LOGS=/var/log/grafana
+  #   volumes:
+  #   - ./volumes/grafana/data:/var/lib/grafana
+  #   - ./volumes/grafana/log:/var/log/grafana
+  #   networks:
+  #   - iotstack_nw
+
+  # influxdb:
+  #   container_name: influxdb
+  #   image: "influxdb:1.8.4"
+  #   restart: unless-stopped
+  #   ports:
+  #   - "8086:8086"
+  #   environment:
+  #   - INFLUXDB_HTTP_FLUX_ENABLED=false
+  #   - INFLUXDB_REPORTING_DISABLED=false
+  #   - INFLUXDB_HTTP_AUTH_ENABLED=false
+  #   - INFLUX_USERNAME=dba
+  #   - INFLUX_PASSWORD=supremo
+  #   - INFLUXDB_UDP_ENABLED=false
+  #   - INFLUXDB_UDP_BIND_ADDRESS=0.0.0.0:8086
+  #   - INFLUXDB_UDP_DATABASE=udp
+  #   volumes:
+  #   - ./volumes/influxdb/data:/var/lib/influxdb
+  #   - ./backups/influxdb/db:/var/lib/influxdb/backup
+  #   networks:
+  #   - iotstack_nw
+
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto
+    restart: unless-stopped
+    user: "1883"
+    # ports:
+    # - "1883:1883"
+    volumes:
+    - ./volumes/mosquitto/data:/mosquitto/data
+    - ./volumes/mosquitto/log:/mosquitto/log
+    - ./volumes/mosquitto/pwfile:/mosquitto/pwfile
+    - ./services/mosquitto:/mosquitto/config:ro
+    # networks:
+    # - iotstack_nw
+    network_mode: host
+
+  node-red-homekit:
+    container_name: node-red-homekit
+    image: nrchkb/node-red-homekit
+    restart: unless-stopped
+    network_mode: host
+    environment:
+    - TZ=Europe/Stockholm
+    volumes:
+    - ./volumes/node-red-homekit/data:/data
+
+# networks:
+#   iotstack_nw: # Exposed by your host.
+#     # external: true
+#     name: IOTstack_Net
+#     driver: bridge
+#     ipam:
+#       driver: default
+#       config:
+#       - subnet: 10.77.60.0/24
+#         # - gateway: 10.77.60.1
+
+#   iotstack_nw_internal: # For interservice communication. No access to outside
+#     name: IOTstack_Net_Internal
+#     driver: bridge
+#     internal: true
+#     ipam:
+#       driver: default
+#       config:
+#       - subnet: 10.77.76.0/24
+#         # - gateway: 10.77.76.1
+#   vpn_nw: # Network specifically for VPN
+#     name: IOTstack_VPN
+#     driver: bridge
+#     ipam:
+#       driver: default
+#       config:
+#       - subnet: 10.77.88.0/24
+#         # - gateway: 192.18.200.1
+
+#   nextcloud_internal: # Network for NextCloud service
+#     name: IOTstack_NextCloud
+#     driver: bridge
+#     internal: true
+
+  # default:
+  #   external: true
+  #   name: iotstack_nw
+
+  # hosts_nw:
+  #   driver: hosts
