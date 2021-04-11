@@ -32,6 +32,7 @@ services:
     - INFLUXDB_UDP_ENABLED=false
     - INFLUXDB_UDP_BIND_ADDRESS=0.0.0.0:8086
     - INFLUXDB_UDP_DATABASE=udp
+    - INFLUXDB_MONITOR_STORE_ENABLED=false  # Do not store internal monitor data to _internal database
     volumes:
     - ./volumes/influxdb/data:/var/lib/influxdb
     # - ./backups/influxdb/db:/var/lib/influxdb/backup
