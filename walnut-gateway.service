@@ -1,0 +1,16 @@
+[Unit]
+Description=Walnut Gateway service
+After=multi-user.target
+Requires=network.target
+
+[Service]
+Type=idle
+User=pi
+ExecStart=sudo /usr/bin/python3 /home/pi/WalnutGateway/WalnutGateway.py
+Restart=always
+RestartSec=30
+KillMode=process
+TimeoutSec=infinity
+
+[Install]
+WantedBy=multi-user.target
