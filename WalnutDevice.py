@@ -52,7 +52,7 @@ class WalnutDevice():
 
     def printDebug(self):
         logging.debug("--- Debug print of sensor data start ---")
-        logging.info("Name: %s Addr: %s Flags: %s RSSI: %sdBm" % (self.name, self.addr, self.flags, self.rssi))
+        logging.debug("Name: %s Addr: %s Flags: %s RSSI: %sdBm" % (self.name, self.addr, self.flags, self.rssi))
         logStr = ""
         if (self.getTemperature() != None):
             logStr += "T:" + str(self.getTemperature()) + "degC "
@@ -66,7 +66,7 @@ class WalnutDevice():
             logStr += "P:" + str(self.getBarometricPressure()) + "mbar "
         if self.getBatteryLevel() is not None:
             logStr += "Bat:" + str(self.getBatteryLevel()) + "% "
-        logging.info(logStr)
+        logging.debug(logStr)
         # for str in self.scanEntry.getScanData():
         #     print(str)
         #     pass

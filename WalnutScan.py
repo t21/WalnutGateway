@@ -65,7 +65,7 @@ class WalnutScanDelegate(DefaultDelegate):
 
     def publishWalnutBatteryLevel(self, base_topic, battery_level):
         if base_topic and battery_level is not None:
-            self.mqtt_client.publish(base_topic + "sensors/batery", battery_level)
+            self.mqtt_client.publish(base_topic + "sensors/battery", battery_level)
 
     def publishWalnutCO2(self, base_topic, co2):
         if base_topic and co2 is not None:

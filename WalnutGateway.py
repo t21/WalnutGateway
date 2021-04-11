@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 import logging
+import os
 import queue
 import sys
 from logging.handlers import RotatingFileHandler
 
-from bluepy.btle import Scanner, DefaultDelegate, Peripheral, Service
+from bluepy.btle import Scanner, DefaultDelegate, Peripheral, Service, BTLEManagementError
 import paho.mqtt.client as mqtt
 
 from WalnutScan import WalnutScanDelegate
@@ -44,9 +45,7 @@ def on_mqtt_disconnect(client, userdata, rc):
 
 def on_mqtt_publish(client, userdata, mid):
     pass
-    # logging.info("Published")
-    # print("Published")
-
+    logging.debug("Published")
 
 def setup_logging(file):
     log_handler = RotatingFileHandler(file, maxBytes=1048576, backupCount=5)
@@ -55,6 +54,7 @@ def setup_logging(file):
     LOG = logging.getLogger()
     LOG.addHandler(log_handler)
     LOG.setLevel(logging.INFO)
+    # LOG.setLevel(logging.DEBUG)
     return LOG
 
 def has_devices_to_configure(queue):
@@ -63,6 +63,7 @@ def has_devices_to_configure(queue):
     return False
 
 def main():
+    btleErrorCount = 0
     setup_logging("/home/pi/WalnutGateway/WalnutGateway.log")
     logging.info("Starting Walnut Gateway")
 
@@ -73,15 +74,25 @@ def main():
     client.on_disconnect = on_mqtt_disconnect
     client.on_publish = on_mqtt_publish
     logging.info("Connecting MQTT broker.")
-    # client.connect("10.0.1.180")
     client.connect("127.0.0.1")
     client.loop_start()
 
     scanner = Scanner().withDelegate(WalnutScanDelegate(configure_device_queue, client))
+    logging.info("Starting BLE scan")
 
     while True:
-        logging.info("----- BLE scan -----")
-        scanner.scan(timeout=1.28, passive=False)
+        logging.debug("----- BLE scan -----")
+        try:
+            scanner.scan(timeout=1.2, passive=False)
+        except BTLEManagementError:
+            logging.error("BTLEManagementError")
+            btleErrorCount += 1
+            if btleErrorCount > 10:
+                os.system('sudo shutdown -r now')
+        except:
+            logging.error("Unknown Error")
+        else:
+            btleErrorCount = 0
         while has_devices_to_configure(configure_device_queue):
             logging.info("Nbr of devices to configure: %s", configure_device_queue.qsize())
             scanEntry = configure_device_queue.get_nowait()
