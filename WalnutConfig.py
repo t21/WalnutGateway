@@ -3,7 +3,7 @@ import queue
 
 from struct import unpack
 
-from bluepy.btle import Scanner, DefaultDelegate, Peripheral, Service
+from bluepy3.btle import Scanner, DefaultDelegate, Peripheral, Service
 
 
 # Supported hardware variants
@@ -29,7 +29,7 @@ climate_configuration = [
     bytes("W=9,3,EA60", 'ascii'),       # Set measurement interval to 60s
     bytes("W=9,FFFE,FFFE", 'ascii'),    # Store pressure sensor configuration in flash
     bytes("W=0,0,1", 'ascii'),          # Advertisement mode
-    bytes("W=0,1,500", 'ascii'),        # Advertisement interval 1.28s
+    bytes("W=0,1,1400", 'ascii'),        # Advertisement interval 0x500 -> 1.28s, 0x1400 -> 5.12s
     bytes("W=0,2,4", 'ascii'),          # 4dBm output power
     bytes("W=0,FFFE,FFFE", 'ascii')     # Store settings
 ]
@@ -55,7 +55,7 @@ conference_configuration = [
     bytes("W=8,11,20", 'ascii'),        # Set timeout_period
     bytes("W=8,FFFE,FFFE", 'ascii'),    # Store light sensor configuration in flash
     bytes("W=0,0,1", 'ascii'),          # Advertisement mode
-    bytes("W=0,1,500", 'ascii'),        # Advertisement interval 1.28s
+    bytes("W=0,1,500", 'ascii'),        # Advertisement interval 0x500 -> 1.28s, 0x1400 -> 5.12s
     bytes("W=0,2,4", 'ascii'),          # 4dBm output power
     bytes("W=0,FFFE,FFFE", 'ascii')     # Store settings
 ]

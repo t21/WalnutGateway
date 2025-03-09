@@ -64,7 +64,18 @@ git config --global user.email "thomas.berg2@gmail.com"
 Clone WalnuGateway repo
 
 
+-------
 
+### Python reqs
+
+bluepy3
+
+https://pypi.org/project/bluepy3/
+
+
+paho-mqtt
+
+tested version 2.1.0
 
 
 

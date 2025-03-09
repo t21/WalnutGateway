@@ -1,7 +1,7 @@
 import logging
 import queue
 import struct
-from bluepy.btle import Scanner, DefaultDelegate, Peripheral, Service
+from bluepy3.btle import Scanner, DefaultDelegate, Peripheral, Service, ScanEntry
 
 #*** db:36:70:83:be:52 -66
 #[(8, 'Short Local Name', 'W'),
@@ -10,38 +10,42 @@ from bluepy.btle import Scanner, DefaultDelegate, Peripheral, Service
 #(22, '16b Service Data', '0f1864')]
 
 class WalnutDevice():
-    def __init__(self, scanEntry):
-        # self.scanEntry = scanEntry
+    def __init__(self, scanEntry: ScanEntry):
+        self.scanEntry = scanEntry
+        self.newDevice = False
+        self.configured: bool = scanEntry.getValueText(1) == "06"
+        self.hasNewData = True
         self.hasManufacturerData = False
         self.clearDeviceData()
-        if self.isWalnutInternal(scanEntry):
-            self.isWalnutVar = True
-            self.addr = scanEntry.addr
-            self.flags = scanEntry.getValueText(1)
-            self.rssi = scanEntry.rssi
-            completeName = scanEntry.getValue(9)
-            shortName = scanEntry.getValue(8)
-            if completeName is not None:
-                self.name = completeName
-            elif shortName is not None:
-                self.name = shortName
-            serviceData = struct.unpack(">HB", bytes.fromhex(scanEntry.getValueText(22)))
-            if serviceData[0] == 0x0f18:
-                self.batteryLevel = serviceData[1]
-            self.hasManufacturerData = self.parseManufacturerData(scanEntry)
+        self.addr = scanEntry.addr
+        self.flags = scanEntry.getValueText(ScanEntry.FLAGS)
+        self.rssi = scanEntry.rssi
+        completeName = scanEntry.getValue(ScanEntry.COMPLETE_LOCAL_NAME)
+        shortName = scanEntry.getValue(ScanEntry.SHORT_LOCAL_NAME)
+        self.name = completeName or shortName
+        serviceData = struct.unpack(">HB", bytes.fromhex(scanEntry.getValueText(ScanEntry.SERVICE_DATA_16B)))
+        if serviceData[0] == 0x0f18:
+            self.batteryLevel = serviceData[1]
+        self.hasManufacturerData = self.parseManufacturerData(scanEntry)
 
-    def isWalnutInternal(self, scanEntry):
-        '''
-            Check if Incomplete 128bit Service == '00001100-0f58-2ba7-72c3-4d8d58fa16de'
-        '''
-        if scanEntry is None:
-            return None
-        if '00001100-0f58-2ba7-72c3-4d8d58fa16de' == scanEntry.getValueText(6):
-            return True
+    def __eq__(self, other):
+        if isinstance(other, WalnutDevice):
+            return self.addr == other.addr
         return False
 
-    def isWalnut(self):
-        return self.isWalnutVar
+    @staticmethod
+    def isWalnut(scanEntry) -> bool:
+        '''
+            Check if: Incomplete 128bit Service == '00001100-0f58-2ba7-72c3-4d8d58fa16de'
+        '''
+        # if scanEntry is None:
+        #     return False
+        # if '00001100-0f58-2ba7-72c3-4d8d58fa16de' == scanEntry.getValueText(ScanEntry.INCOMPLETE_128B_SERVICES):
+        #     return True
+        # return False
+        is_walnut = scanEntry is not None and scanEntry.getValueText(ScanEntry.INCOMPLETE_128B_SERVICES) == '00001100-0f58-2ba7-72c3-4d8d58fa16de'
+        return is_walnut
+
 
     def isConfigured(self, scanEntry):
         if scanEntry is None:
@@ -222,53 +226,3 @@ class WalnutDevice():
                 idx += 2
         logging.debug("--- Parsing advertisement end ---")
         return True
-
-    # def append_device_data(self, queue, mqtt_client=None):
-    #     base_topic = "walnuts/" + self.scanEntry.addr + "/"
-    #     rssi_topic = base_topic + "rssi"
-    #     if mqtt_client is None:
-    #         queue.put_nowait((rssi_topic, self.scanEntry.rssi))
-    #     else:
-    #         mqtt_client.publish(rssi_topic, self.scanEntry.rssi)
-    #     if self.getTemperature() != None:
-    #         temperature_topic = base_topic + "sensors/temperature"
-    #         if mqtt_client is None:
-    #             queue.put_nowait((temperature_topic, self.getTemperature()))
-    #         else:
-    #             mqtt_client.publish(temperature_topic, self.getTemperature())
-    #     if self.getRelativeHumidity() is not None:
-    #         relative_humidity_topic = base_topic + "sensors/relative_humidity"
-    #         if mqtt_client is None:
-    #             queue.put_nowait((relative_humidity_topic, self.getRelativeHumidity()))
-    #         else:
-    #             mqtt_client.publish(relative_humidity_topic, self.getRelativeHumidity())
-    #     if self.getAmbientLight() is not None:
-    #         ambient_light_topic = base_topic + "sensors/ambient_light"
-    #         if mqtt_client is None:
-    #             queue.put_nowait((ambient_light_topic, self.getAmbientLight()))
-    #         else:
-    #             mqtt_client.publish(ambient_light_topic, self.getAmbientLight())
-    #     if self.getPresence() is not None:
-    #         presence_topic = base_topic + "sensors/presence"
-    #         if mqtt_client is None:
-    #             queue.put_nowait((presence_topic, self.getPresence()))
-    #         else:
-    #             mqtt_client.publish(presence_topic, self.getPresence())
-    #     if self.getBarometricPressure() is not None:
-    #         barometric_pressure_topic = base_topic + "sensors/barometric_pressure"
-    #         if mqtt_client is None:
-    #             queue.put_nowait((barometric_pressure_topic, self.getBarometricPressure()))
-    #         else:
-    #             mqtt_client.publish(barometric_pressure_topic, self.getBarometricPressure())
-    #     if self.getBatteryLevel() is not None:
-    #         battery_level_topic = base_topic + "battery"
-    #         if mqtt_client is None:
-    #             queue.put_nowait((battery_level_topic, self.getBatteryLevel()))
-    #         else:
-    #             mqtt_client.publish(battery_level_topic, self.getBatteryLevel())
-    #     if self.getCO2() is not None:
-    #         co2_topic = base_topic + "sensors/co2"
-    #         if mqtt_client is None:
-    #             queue.put_nowait((co2_topic, self.getCO2()))
-    #         else:
-    #             mqtt_client.publish(co2_topic, self.getCO2())

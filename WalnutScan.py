@@ -1,32 +1,47 @@
 import logging
 import queue
 import struct
-from bluepy.btle import Scanner, DefaultDelegate, Peripheral, Service
+# from bluepy3.btle import Scanner, DefaultDelegate, Peripheral, Service
+import bluepy3
 
 from WalnutDevice import WalnutDevice
 
 
-class WalnutScanDelegate(DefaultDelegate):
-    def __init__(self, configure_device_queue, mqtt_client):
-        DefaultDelegate.__init__(self)
+class WalnutScanDelegate(bluepy3.btle.DefaultDelegate):
+    def __init__(self, configure_device_queue, mqtt_client, walnut_device_list: list[WalnutDevice]):
+        bluepy3.btle.DefaultDelegate.__init__(self)
         self.configure_device_queue = configure_device_queue
         self.mqtt_client = mqtt_client
+        self.walnut_device_list = walnut_device_list
 
-    def handleDiscovery(self, scanEntry, isNewDev, isNewData):
-        walnut = WalnutDevice(scanEntry)
-        if walnut.isWalnut():
-            # print("isNewDev:" + str(isNewDev) + "isNewData:" + str(isNewData))
-            # print(walnut.addr)
-            # print(walnut.getTemperature())
+    def handleDiscovery(self, scanEntry: bluepy3.btle.ScanEntry, isNewDev: bool, isNewData: bool):
+        if WalnutDevice.isWalnut(scanEntry):
+            walnut = WalnutDevice(scanEntry)
+            # print(scanEntry.addr + " isNewDev:" + str(isNewDev) + " isNewData:" + str(isNewData))
             self.publishWalnutMqtt(walnut)
-        # if dev.isWalnut() and self.mqtt_publish_queue is not None:
-        #     dev.printDebug()
-        #     logging.info("isNewDev:%s isNewData:%s", isNewDev, isNewData)
-        #     dev.append_device_data(self.mqtt_publish_queue, self.mqtt_client)
-        if isNewDev and walnut.isWalnut() and not walnut.isConfigured(scanEntry):
-            self.configure_device_queue.put(scanEntry)
 
-    def publishWalnutMqtt(self, walnut):
+            # Check if walnut exists in the list
+            walnut_found = False
+            for existing_walnut in self.walnut_device_list:
+                if existing_walnut == walnut:  # Or compare based on a unique identifier
+                    existing_walnut = walnut
+                    walnut_found = True
+                    break
+
+            # If not found, append it to the list
+            if not walnut_found:
+                walnut.newDevice = True
+                self.walnut_device_list.append(walnut)
+
+            #if walnut not in self.walnut_device_list:
+            #    walnut.newDevice = True
+            #    self.walnut_device_list.append(walnut)
+
+
+            if isNewDev and not walnut.isConfigured(scanEntry):
+                self.configure_device_queue.put(scanEntry)
+
+    def publishWalnutMqtt(self, walnut: WalnutDevice):
         if self.mqtt_client is None or walnut is None:
             return
         base_topic = "walnuts/" + walnut.addr + "/"
@@ -70,3 +85,4 @@ class WalnutScanDelegate(DefaultDelegate):
     def publishWalnutCO2(self, base_topic, co2):
         if base_topic and co2 is not None:
             self.mqtt_client.publish(base_topic + "sensors/co2", co2)
+
